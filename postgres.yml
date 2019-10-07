@@ -1,0 +1,85 @@
+# Нужно использовать эти данные
+#FROM postgres:11.1
+#COPY schema.sql /docker-entrypoint-initdb.d/
+#COPY data.sql /docker-entrypoint-initdb.d/
+
+version: '3.6'
+
+services:
+  postgresql:
+    image: postgres:11.1
+    container_name: storage
+    restart: unless-stopped
+    # нужно ли юзать environment?
+    volumes:
+      - ./docker-postgres.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    # - ./data.sql:/docker-entrypoint-initdb.d/2-data.sql
+      - ./pgdata:/var/lib/postgresql/data
+    # Как добавить скрипты в контейнер?
+    #    COPY schema.sql /docker-entrypoint-initdb.d/
+    #    COPY data.sql /docker-entrypoint-initdb.d/
+    # 5431 - локальный порт; 5432 - порт внутри контейнера
+    ports:
+      - "5431:5432" 
+    # Нужно ли монтировать volumes?
+    # Пример.  линкуем директорию на нашей машине, с рабочей директорий apache, т.е.
+    #  все файлы находящиеся в директории src, будут доступны для apache, как будто они лежат в директории htdocs
+    #  (обратное тоже работает, все что создано в docker "копируется" на локальную машину).
+    #    volumes:
+    #      - ./src:/usr/local/apache2/htdocs
+    # [!] Remove pgdata dir before rebuild conatainer
+volumes:
+    pgdata:
+    
+    # driver: local
+
+
+# Вариант А ############################
+# FROM sameersbn/postgresql:9.6-2
+# ADD pgdata/dump.sql /sbin/entrypoint.sh
+
+# Вариант Б ############################
+#version: '2'
+#services:
+#  monosandbox-postgresql:
+#    image: postgres:9.6.5
+#    # volumes:
+#    #     - ~/volumes/jhipster/monoSandbox/postgresql/:/var/lib/postgresql/data/
+#    environment:
+#      - POSTGRES_DB=app
+#      - POSTGRES_USER=app
+#      - POSTGRES_PASSWORD=app
+#    ports:
+#      - 5432:5432
+
+# Вариант В (рабочий) ############################
+#version: '2'
+# Директива volumes монтирует папки из хостмашины внурть контейнера, таким образом, осуществляется конфигурирование сервиса и сохранение данных бд при перезапуске.
+## volumes:
+##    pgdata: {}
+##    static: {}
+#services:
+#  monosandbox-postgresql:
+#    image: sameersbn/postgresql:9.6-2
+#    container_name: pg
+#    # Когда работает маппинг, фэйлится база
+#    # При отключенном маппинге сервер стартует
+#    #        volumes:
+#    #            - ./pgdata:/var/lib/postgresql
+#    environment:
+#      - DEBUG=false
+#
+#      - DB_USER=monosandbox
+#      - DB_PASS=mono
+#      - DB_NAME=monodb
+#      - DB_TEMPLATE=
+#
+#      - DB_EXTENSION=
+#
+#      - REPLICATION_MODE=
+#      - REPLICATION_USER=
+#      - REPLICATION_PASS=
+#      - REPLICATION_SSLMODE=
+#    ports:
+#      - "5432:5432"
+

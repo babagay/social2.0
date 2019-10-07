@@ -1,0 +1,110 @@
+
+// Блок buildScript определяет, какие плагины, классы задач и другие классы доступны для использования в оставшейся части сценария сборки.
+// Без блока buildScript вы можете использовать все, что поставляется с Gradle, из коробки.
+// Если вы дополнительно хотите использовать сторонние плагины, классы задач или другие классы (в сценарии сборки!), Вы должны указать соответствующие зависимости в блоке buildScript.
+// legacy plugin application
+buildscript {
+     repositories {
+         gradlePluginPortal()
+ }
+     dependencies {
+         classpath 'com.bmuschko:gradle-docker-plugin:4.10.0'
+     }
+ }
+ 
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import com.bmuschko.gradle.docker.DockerRegistryCredentials
+
+// apply plugin: 'com.bmuschko.docker-remote-api'
+
+ 
+docker {
+  javaApplication {
+    baseImage = 'openjdk:latest'
+    tag = 'java-app:gradle'
+  }
+}
+ 
+task createContainer(type: DockerCreateContainer) {
+    dependsOn dockerBuildImage    
+    targetImageId { dockerBuildImage.getImageId() }
+}
+
+task startContainer(type: DockerStartContainer) {    
+    dependsOn createContainer 
+    targetContainerId { createContainer.getContainerId() }
+}
+
+/*
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:3.2.7'
+    }
+}
+repositories {
+    jcenter()
+}
+// use fully qualified class name
+apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin    
+
+// import task classes
+import com.bmuschko.gradle.docker.tasks.image.*    
+
+def imageName = project.ext.imageName
+def tagName = project.ext.tagName
+def jarName = project.ext.jarName    
+
+task createAppDockerfile(type: Dockerfile) {
+    // Don't create dockerfile if file already exists
+    onlyIf { !project.file('Dockerfile').exists() }
+    group 'Docker'
+    description 'Generate docker file for the application'
+    dependsOn bootRepackage
+    destFile = project.file('Dockerfile')
+    String dockerProjFolder = project.projectDir.name
+    from 'openjdk:8-jre-slim'
+    runCommand("mkdir -p /app/springboot/${dockerProjFolder} && mkdir -p /app/springboot/${dockerProjFolder}/conf")
+    addFile("./build/libs/${jarName}.jar", "/app/springboot/${dockerProjFolder}/")
+    environmentVariable('CATALINA_BASE', "/app/springboot/${dockerProjFolder}")
+    environmentVariable('CATALINA_HOME', "/app/springboot/${dockerProjFolder}")
+    workingDir("/app/springboot/${dockerProjFolder}")
+    if (System.properties.containsKey('debug')) {
+        entryPoint('java', '-Xdebug', '-Xrunjdwp:server=y,transport=dt_socket,address=5005,suspend=n', '-jar', "/app/springboot/${dockerProjFolder}/${jarName}.jar")
+    } else {
+        entryPoint('java', '-jar', "/app/springboot/${dockerProjFolder}/${jarName}.jar")
+    }
+}    
+
+task removeAppImage(type: DockerRemoveImage) {
+    group 'Docker'
+    description 'Remove the docker image using force'
+    force = true
+    targetImageId { imageName }
+    onError { exception ->
+        if (exception.message.contains('No such image')) {
+            println 'Docker image not found for the current project.'
+        } else {
+            print exception
+        }
+    }
+}    
+
+task createAppImage(type: DockerBuildImage) {
+    group 'Docker'
+    description 'Executes bootRepackage, generates a docker file and builds image from it'
+    dependsOn(createAppDockerfile, removeAppImage)
+    dockerFile = createAppDockerfile.destFile
+    inputDir = dockerFile.parentFile
+    if (tagName)
+        tag = "${tagName}"
+    else if (imageName)
+        tag = "${imageName}"
+    else
+        tag = "${jarName}"
+}
+*/

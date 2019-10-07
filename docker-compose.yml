@@ -1,0 +1,149 @@
+version: '3.7'
+services:
+
+    webapp:
+      container_name: app
+      build:
+        context: ./
+        # Приложение собирается из докерфайла
+        dockerfile: docker/app/Dockerfile
+      image: webapp:tag
+      # depends_on НЕ гарантирует, что db стартанет перед webapp.
+      depends_on:
+        - db
+      restart: on-failure
+      ports:
+        - "80:8080"
+    db:
+      # Можно взять конфигурацию из файла
+      # build: postgres.yml
+      image: postgres:11.1
+      container_name: storage
+      ports:
+        - "5431:5432"
+      volumes:
+        # /var/lib/postgresql - база
+        # /var/log/postgresql - логи
+        # /etc/postgresql - конфиги
+        # Тома НЕ работают в винде. Выдает ошибку: data directory "/var/lib/postgresql/data" has wrong ownership
+        - pgdata:/var/lib/postgresql/data:Z
+        #  scripts in /docker-entrypoint-initdb.d are only run if you start the container with a data directory that is empty
+        # - ./pg-scripts/init-user.sh:/docker-entrypoint-initdb.d/1-init-user.sh
+        - ./pg-scripts/schema.sql:/docker-entrypoint-initdb.d/2-schema.sql
+        # - ./pg-scripts/docker-postgres.sql:/docker-entrypoint-initdb.d/3-test.sql
+        # Либо можно поименно скрипты не перечислять, а указать папку:
+        #  - ./postgresql/conf:/etc/postgresql/
+      restart: always
+      # можно задать креды суперюзера здесь
+      environment:
+        # superuser name & pass
+        POSTGRES_USER: postgres 
+        POSTGRES_PASSWORD: secret
+        # default database 
+        POSTGRES_DB: social
+        PGDATA: /var/lib/postgresql/data
+volumes:
+   pgdata:
+     external: true
+
+# TODO можно попробовать:
+# Before mounting the containers, you must create the volume manually:
+# docker volume create --name=pgdata
+
+
+# Пример из статьи https://habr.com/ru/post/337306/
+#  app:
+#  build: docker/php/Dockerfile
+#  working_dir: /app
+#  volumes:
+#    - ./:/app
+#  expose:
+#    - 9000
+#  links:
+#    - db
+#  nginx:
+#  image: nginx:latest
+#  ports:
+#    - "80:80"
+#  volumes:
+#    - ./:/app
+#    - ./docker/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
+#  links:
+#    - app
+#  db:
+#  image: mysql:5.7
+#  volumes:
+#    - /var/lib/mysql
+#  ports:
+#    - "3306:3306"
+#  environment:
+#  MYSQL_ROOT_PASSWORD: root
+#  MYSQL_DATABASE: dbname
+#  MYSQL_USER: dbuser
+#  MYSQL_PASSWORD: dbpassword
+
+# Пример из Sandbox
+#version: '3'
+#services:
+#  postgres:
+#    # у нас свой образ для Postgres, указываем путь к нему и говорим что его надо собрать
+#    build: postgres/
+#      # монтируем директории, слева директории на основной машине, справа - куда они монтируются в контейнере
+#    volumes:
+#      - db-data:/var/lib/postgresql/data/
+#    environment:
+#      #  задаем пароль для root пользователя
+#      - POSTGRES_PASSWORD=postgres
+#    ports:
+#      # слева порт локалхоста
+#      - "5432:5432"
+#  app:
+#    build: app/
+#    ports:
+#      - "8085:8080"
+#volumes:
+#  db-data:
+
+# Пример
+#version: '3.6'
+#
+#services:
+#  db:
+#    image: rethinkdb:2.3.6
+#    ports:
+#      - 28015:28015
+#      - 8080:8080
+#    networks:
+#      - 3dstore
+#    volumes:
+#      - 3dstore-data:/data/
+#
+#
+#
+#  storage:
+#    image: minio/minio:RELEASE.2018-12-13T02-04-19Z
+#    volumes:
+#      - ./tmp/:/data
+#    ports:
+#      - 9000:9000
+#    command: minio server /data
+#    networks:
+#      - 3dstore
+#    environment:
+#      - MINIO_ACCESS_KEY=admin
+#      - MINIO_SECRET_KEY=password
+#
+#volumes:
+#  3dstore-data:
+#
+#networks:
+#  3dstore:
+#    driver: bridge
+
+# Обязательно ли загружать образ на docker hub или его можно брать локально?
+#   Можно собирать его локально.
+# Как (по шагам) выглядит процесс разработки?
+#  Я изменил строку,
+#  перегенерил контейнер,
+#  и все работает?
+#  [!] Чтобы запустить проект, используем docker-compose up

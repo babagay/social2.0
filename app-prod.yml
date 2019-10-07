@@ -1,0 +1,24 @@
+# Пример из MonoSandbox
+version: '2'
+services:
+  monosandbox-app:
+    # Доступный на Docker Hub образ
+    image: babagay/sandbox
+    container_name: app
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod,swagger
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://monosandbox-postgresql:5432/monodb
+      - JHIPSTER_SLEEP=10 # gives time for the database to boot before the application
+      - SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=monosandbox-elasticsearch:9300
+    ports:
+      # В докер-контейнере приложение висит на порту 8080. Мы мапим его на localhost:80
+      - 80:8080
+  monosandbox-postgresql:
+    extends:
+      #            file: postgresql.yml
+      file: postgres/postgres-sameersbn.yml
+      service: monosandbox-postgresql
+  monosandbox-elasticsearch:
+    extends:
+      file: elasticsearch.yml
+      service: monosandbox-elasticsearch
