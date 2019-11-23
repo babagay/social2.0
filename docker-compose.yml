@@ -28,7 +28,7 @@ services:
         # Тома НЕ работают в винде. Выдает ошибку: data directory "/var/lib/postgresql/data" has wrong ownership
         - pgdata:/var/lib/postgresql/data:Z
         #  scripts in /docker-entrypoint-initdb.d are only run if you start the container with a data directory that is empty
-        # - ./pg-scripts/init-user.sh:/docker-entrypoint-initdb.d/1-init-user.sh
+        # - ./pg-scripts/social.init-user.sh:/docker-entrypoint-initdb.d/1-social.init-user.sh
         - ./pg-scripts/schema.sql:/docker-entrypoint-initdb.d/2-schema.sql
         # - ./pg-scripts/docker-postgres.sql:/docker-entrypoint-initdb.d/3-test.sql
         # Либо можно поименно скрипты не перечислять, а указать папку:
