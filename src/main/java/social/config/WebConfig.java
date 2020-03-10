@@ -1,6 +1,7 @@
 package social.config;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
@@ -32,13 +33,14 @@ import org.thymeleaf.templateresolver.UrlTemplateResolver;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"social.controller"})
+//@ComponentScan(basePackages = {"social.controller"})
 public class WebConfig
         implements
         WebMvcConfigurer,
-        WebServerFactoryCustomizer<ConfigurableServletWebServerFactory>,
-        ApplicationContextAware
+        WebServerFactoryCustomizer<ConfigurableServletWebServerFactory>
+        // ApplicationContextAware
 {
+    @Autowired
     private ApplicationContext applicationContext;
 
     public WebConfig()
@@ -66,11 +68,11 @@ public class WebConfig
         factory.setPort(80);
     }
 
-    @Override
-    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
+//    @Override
+//    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException
+//    {
+//        this.applicationContext = applicationContext;
+//    }
 
     // -- THYMELEAF-SPECIFIC ARTIFACTS
 
@@ -101,7 +103,7 @@ public class WebConfig
         // SpringResourceTemplateResolver automatically integrates with Spring's own
         // resource resolution infrastructure, which is highly recommended.
         SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-        templateResolver.setApplicationContext(this.applicationContext);
+        templateResolver.setApplicationContext(applicationContext);
         templateResolver.setPrefix("/WEB-INF/templates/");
         templateResolver.setSuffix(".html");
         // HTML is the default value, added here for the sake of clarity.
@@ -142,14 +144,6 @@ public class WebConfig
         registry.addResourceHandler("/css/**").addResourceLocations("/static/css/");
         registry.addResourceHandler("/js/**").addResourceLocations("/static/js/");
         registry.addResourceHandler("/fonts/**").addResourceLocations("/static/fonts/");
-    }
-
-    // i18? Should be added boundle Messages
-    @Bean
-    public ResourceBundleMessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("Messages");
-        return messageSource;
     }
 
     @Override

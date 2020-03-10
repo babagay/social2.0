@@ -24,6 +24,11 @@ spring:
   profiles: dev
   jpa:
     show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        show_sql: true
+        format_sql: false
   datasource:
     hikari:
       connectionTimeout: 20000
@@ -31,6 +36,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/social2
     username: postgres
     password: postgres
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    cache-seconds: -1
 name: dev-YAML
 environment: development
 servers:

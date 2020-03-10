@@ -1,6 +1,7 @@
 <!DOCTYPE xml>
 <!--https://www.mkyong.com/logging/logback-xml-example/-->
 <!--        All logging will be redirected to console.-->
+<!--[!] Seems like this config is not used-->
 <configuration>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

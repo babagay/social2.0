@@ -1,8 +1,8 @@
-package social.entity;
+package social.dto;
 
 public class Credentials
 {
-    private String userName = "foo";
+    private String userName = "user";
     private String password = "";
 
     public String getUserName()

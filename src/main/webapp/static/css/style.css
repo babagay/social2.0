@@ -25,3 +25,12 @@
     top: 74px;
     left: 10px;
 }
+
+.fieldError {
+    border: 1px solid red;
+}
+
+.form-error-list {
+    margin: 10px;
+    color: red;
+}
